@@ -1,18 +1,25 @@
 using TraceKit.Core;
+using DotNetEnv;
+
+// Load .env file if it exists
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load configuration from environment
+// Load configuration from environment variables
+var enabled = Environment.GetEnvironmentVariable("TRACEKIT_ENABLED") != "false";
 var apiKey = Environment.GetEnvironmentVariable("TRACEKIT_API_KEY") ?? "test_key";
-var serviceName = "dotnet-test-app";
+var endpoint = Environment.GetEnvironmentVariable("TRACEKIT_ENDPOINT") ?? "http://localhost:8081";
+var serviceName = Environment.GetEnvironmentVariable("TRACEKIT_SERVICE_NAME") ?? "dotnet-sdk";
+var codeMonitoringEnabled = Environment.GetEnvironmentVariable("TRACEKIT_CODE_MONITORING_ENABLED") != "false";
 
 // Initialize TraceKit SDK
 var config = TracekitConfig.CreateBuilder()
     .WithApiKey(apiKey)
     .WithServiceName(serviceName)
-    .WithEndpoint("app.tracekit.dev")
+    .WithEndpoint(endpoint)
     .WithEnvironment("development")
-    .WithEnableCodeMonitoring(true)
+    .WithEnableCodeMonitoring(codeMonitoringEnabled)
     .Build();
 
 var sdk = TracekitSDK.Create(config);
