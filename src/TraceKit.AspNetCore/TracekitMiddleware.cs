@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using TraceKit.Core;
 
 namespace TraceKit.AspNetCore;
@@ -55,6 +56,17 @@ public sealed class TracekitMiddleware
         });
 
         activeGauge.Inc();
+
+        // Extract and add client IP to the current span
+        var clientIP = HttpUtilities.ExtractClientIP(context);
+        if (!string.IsNullOrEmpty(clientIP))
+        {
+            var activity = Activity.Current;
+            if (activity != null)
+            {
+                activity.SetTag("http.client_ip", clientIP);
+            }
+        }
 
         try
         {

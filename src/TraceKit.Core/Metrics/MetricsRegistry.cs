@@ -44,7 +44,7 @@ public sealed class MetricsRegistry : IDisposable
             Type = type,
             Value = value,
             Tags = new Dictionary<string, string>(tags),
-            TimestampNanos = DateTimeOffset.UtcNow.ToUnixTimeNanoseconds()
+            TimestampNanos = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() * 1_000_000
         };
 
         _buffer.Add(dataPoint);

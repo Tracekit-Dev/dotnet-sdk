@@ -37,8 +37,6 @@ public sealed class SnapshotClient : IDisposable
             TimeSpan.Zero,
             TimeSpan.FromSeconds(pollIntervalSeconds)
         );
-
-        Console.WriteLine($"Snapshot client started for service: {_serviceName}");
     }
 
     public void CaptureSnapshot(string label, Dictionary<string, object> variables,
@@ -53,7 +51,7 @@ public sealed class SnapshotClient : IDisposable
         var locationKey = $"{functionName}:{label}";
         if (!_breakpointsCache.TryGetValue(locationKey, out var breakpoint))
         {
-            var lineKey = $"{Path.GetFileName(filePath)}:{lineNumber}";
+            var lineKey = $"{filePath}:{lineNumber}";
             if (!_breakpointsCache.TryGetValue(lineKey, out breakpoint))
             {
                 return; // No active breakpoint
@@ -67,21 +65,22 @@ public sealed class SnapshotClient : IDisposable
         // Scan for security issues
         var scanResult = _securityDetector.Scan(variables);
 
-        // Get trace context (simplified - would use actual OpenTelemetry context)
+        // Get trace context from current Activity (OpenTelemetry)
+        var activity = Activity.Current;
         var stackTrace = new StackTrace(true).ToString();
 
         var snapshot = new Snapshot(
             BreakpointId: breakpoint.Id,
             ServiceName: _serviceName,
-            FilePath: Path.GetFileName(filePath),
+            FilePath: filePath,
             FunctionName: functionName,
             Label: label,
             LineNumber: lineNumber,
             Variables: scanResult.SanitizedVariables,
             SecurityFlags: scanResult.SecurityFlags.Cast<object>().ToList(),
             StackTrace: stackTrace,
-            TraceId: null, // Would be populated from OpenTelemetry context
-            SpanId: null,
+            TraceId: activity?.TraceId.ToString(),
+            SpanId: activity?.SpanId.ToString(),
             Timestamp: DateTime.UtcNow
         );
 
@@ -100,7 +99,6 @@ public sealed class SnapshotClient : IDisposable
             var response = _httpClient.Send(request);
             if (!response.IsSuccessStatusCode)
             {
-                Console.WriteLine($"Failed to fetch breakpoints: HTTP {response.StatusCode}");
                 return;
             }
 
@@ -113,9 +111,9 @@ public sealed class SnapshotClient : IDisposable
                 UpdateBreakpointCache(result.Breakpoints);
             }
         }
-        catch (Exception ex)
+        catch
         {
-            Console.WriteLine($"Error fetching breakpoints: {ex.Message}");
+            // Silently ignore errors fetching breakpoints
         }
     }
 
@@ -131,11 +129,9 @@ public sealed class SnapshotClient : IDisposable
                 _breakpointsCache[labelKey] = bp;
             }
 
-            var lineKey = $"{Path.GetFileName(bp.FilePath)}:{bp.LineNumber}";
+            var lineKey = $"{bp.FilePath}:{bp.LineNumber}";
             _breakpointsCache[lineKey] = bp;
         }
-
-        Console.WriteLine($"Updated breakpoint cache: {breakpoints.Count} active breakpoints");
     }
 
     private void AutoRegisterBreakpoint(string filePath, int lineNumber, string functionName, string label)
@@ -144,29 +140,38 @@ public sealed class SnapshotClient : IDisposable
         if (_registrationCache.Contains(regKey)) return;
 
         _registrationCache.Add(regKey);
-        Console.WriteLine($"Auto-registering breakpoint: {label} at {filePath}:{lineNumber}");
 
-        _ = Task.Run(() =>
+        _ = Task.Run(async () =>
         {
             try
             {
                 var registration = new BreakpointRegistration(
                     ServiceName: _serviceName,
-                    FilePath: Path.GetFileName(filePath),
+                    FilePath: filePath,
                     LineNumber: lineNumber,
                     FunctionName: functionName,
                     Label: label
                 );
 
-                var request = new HttpRequestMessage(HttpMethod.Post, $"{_baseURL}/sdk/snapshots/register")
+                var request = new HttpRequestMessage(HttpMethod.Post, $"{_baseURL}/sdk/snapshots/auto-register")
                 {
                     Content = JsonContent.Create(registration)
                 };
                 request.Headers.Add("X-API-Key", _apiKey);
 
-                _httpClient.Send(request);
+                var response = _httpClient.Send(request);
+
+                // Refresh breakpoints cache after successful registration
+                if (response.IsSuccessStatusCode)
+                {
+                    await Task.Delay(500); // Small delay for backend processing
+                    FetchActiveBreakpoints();
+                }
             }
-            catch { }
+            catch
+            {
+                // Silently ignore auto-registration errors
+            }
         });
     }
 
@@ -174,21 +179,17 @@ public sealed class SnapshotClient : IDisposable
     {
         try
         {
-            var request = new HttpRequestMessage(HttpMethod.Post, $"{_baseURL}/sdk/snapshots")
+            var request = new HttpRequestMessage(HttpMethod.Post, $"{_baseURL}/sdk/snapshots/capture")
             {
                 Content = JsonContent.Create(snapshot)
             };
             request.Headers.Add("X-API-Key", _apiKey);
 
-            var response = _httpClient.Send(request);
-            if (!response.IsSuccessStatusCode)
-            {
-                Console.WriteLine($"Failed to submit snapshot: HTTP {response.StatusCode}");
-            }
+            _httpClient.Send(request);
         }
-        catch (Exception ex)
+        catch
         {
-            Console.WriteLine($"Error submitting snapshot: {ex.Message}");
+            // Silently ignore snapshot submission errors
         }
     }
 

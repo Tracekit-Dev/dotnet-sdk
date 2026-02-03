@@ -37,7 +37,7 @@ public sealed class SensitiveDataDetector
 
     private (object value, List<SecurityFlag> flags) ScanValue(string key, object value)
     {
-        if (value == null) return (value, new List<SecurityFlag>());
+        if (value == null) return ("[NULL]", new List<SecurityFlag>());
 
         var flags = new List<SecurityFlag>();
         var valueStr = value.ToString() ?? "";

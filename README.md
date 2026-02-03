@@ -111,15 +111,23 @@ durationHistogram.Record(123.45);
 
 ## Code Monitoring
 
+TraceKit enables non-breaking snapshots of your application's runtime state:
+
 ```csharp
 // Capture snapshot with variable state
-TracekitSDK.CaptureSnapshot("checkout-start", new()
+sdk.CaptureSnapshot("checkout-start", new()
 {
     ["userId"] = 123,
     ["amount"] = 99.99,
     ["status"] = "processing"
 });
 ```
+
+Features:
+- Automatic variable capture with file/line/function context
+- Built-in sensitive data detection and redaction
+- Distributed trace correlation (trace_id, span_id)
+- Zero performance impact when breakpoints are inactive
 
 ## Project Structure
 
@@ -142,7 +150,7 @@ dotnet-sdk/
 
 - .NET SDK 8.0 or higher
 - Git
-- TraceKit API key (get one at [tracekit.dev](https://tracekit.dev))
+- TraceKit API key
 
 ### Building from Source
 
@@ -170,9 +178,8 @@ dotnet run
 
 ## Documentation
 
-- [Implementation Plan](../plans/DOTNET_SDK_IMPLEMENTATION_PLAN.md)
 - [CHANGELOG](CHANGELOG.md) - Version history and release notes
-- [TraceKit Documentation](https://docs.tracekit.dev)
+- [TraceKit Documentation](https://app.tracekit.dev/docs)
 - [Test Application README](dotnet-test/README.md)
 
 ## Contributing
@@ -201,4 +208,3 @@ Built on [OpenTelemetry](https://opentelemetry.io/) - the industry standard for 
 
 **Repository**: git@github.com:Tracekit-Dev/dotnet-sdk.git
 **Version**: v0.1.0
-**Status**: Production Ready ✅

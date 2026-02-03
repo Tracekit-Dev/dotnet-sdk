@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -9,7 +9,7 @@
     <Authors>TraceKit</Authors>
     <Company>TraceKit</Company>
     <Product>TraceKit .NET SDK - ASP.NET Core Integration</Product>
-    <Description>ASP.NET Core integration for TraceKit distributed tracing, metrics, and code monitoring</Description>
+    <Description>ASP.NET Core integration for TraceKit distributed tracing, metrics, and code monitoring. Requires .NET 8.0 or later.</Description>
     <PackageTags>tracing;monitoring;apm;opentelemetry;aspnetcore;metrics;distributed-tracing</PackageTags>
     <RepositoryUrl>https://github.com/Tracekit-Dev/dotnet-sdk</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.0" />
   </ItemGroup>
 
 </Project>

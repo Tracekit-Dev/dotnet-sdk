@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using OpenTelemetry;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -131,9 +132,12 @@ public sealed class TracekitSDK : IDisposable
     /// </summary>
     /// <param name="label">Stable identifier for this snapshot location</param>
     /// <param name="variables">Variables to capture in the snapshot</param>
-    public void CaptureSnapshot(string label, Dictionary<string, object> variables)
+    public void CaptureSnapshot(string label, Dictionary<string, object> variables,
+        [CallerFilePath] string filePath = "",
+        [CallerLineNumber] int lineNumber = 0,
+        [CallerMemberName] string functionName = "")
     {
-        _snapshotClient?.CaptureSnapshot(label, variables);
+        _snapshotClient?.CaptureSnapshot(label, variables, filePath, lineNumber, functionName);
     }
 
     /// <summary>
