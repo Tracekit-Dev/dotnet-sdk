@@ -8,8 +8,6 @@ Official .NET SDK for TraceKit APM - OpenTelemetry-based distributed tracing, me
 
 ## Status
 
-**Current Version:** v0.1.0 ✅
-
 The SDK is production-ready with full support for distributed tracing, metrics, and code monitoring.
 
 ## Overview
