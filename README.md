@@ -6,17 +6,17 @@
 
 Official .NET SDK for TraceKit APM - OpenTelemetry-based distributed tracing, metrics collection, and application performance monitoring for .NET applications.
 
-## 🚧 Status: Under Development
+## Status
 
-This SDK is currently in active development. See [DOTNET_SDK_IMPLEMENTATION_PLAN.md](../plans/DOTNET_SDK_IMPLEMENTATION_PLAN.md) for the full implementation roadmap.
+**Current Version:** v0.1.0 ✅
 
-**Target Release:** v0.1.0
+The SDK is production-ready with full support for distributed tracing, metrics, and code monitoring.
 
 ## Overview
 
 TraceKit .NET SDK provides production-ready distributed tracing, metrics, and code monitoring capabilities for .NET and ASP.NET Core applications. Built on OpenTelemetry standards, it offers seamless integration with ASP.NET Core, automatic local development support, comprehensive security scanning, and a lightweight metrics API for tracking application performance.
 
-## Features (Planned)
+## Features
 
 - **OpenTelemetry-Native**: Built on OpenTelemetry 1.7.0 for maximum compatibility
 - **Distributed Tracing**: Full support for distributed trace propagation across microservices
@@ -28,7 +28,7 @@ TraceKit .NET SDK provides production-ready distributed tracing, metrics, and co
 - **HttpClient Instrumentation**: Automatic client-side span creation
 - **Production-Ready**: Comprehensive error handling and graceful shutdown
 
-## Installation (Coming Soon)
+## Installation
 
 ### NuGet
 
@@ -44,7 +44,7 @@ For vanilla .NET applications:
 dotnet add package TraceKit.Core
 ```
 
-## Quick Start (Coming Soon)
+## Quick Start
 
 ### ASP.NET Core
 
@@ -171,8 +171,9 @@ dotnet run
 ## Documentation
 
 - [Implementation Plan](../plans/DOTNET_SDK_IMPLEMENTATION_PLAN.md)
-- [TraceKit Documentation](https://docs.tracekit.dev) (Coming Soon)
-- [API Reference](https://docs.tracekit.dev/dotnet) (Coming Soon)
+- [CHANGELOG](CHANGELOG.md) - Version history and release notes
+- [TraceKit Documentation](https://docs.tracekit.dev)
+- [Test Application README](dotnet-test/README.md)
 
 ## Contributing
 
@@ -184,7 +185,7 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
 ## Support
 
-- **Documentation**: https://docs.tracekit.dev/dotnet (Coming Soon)
+- **Documentation**: https://docs.tracekit.dev
 - **Issues**: https://github.com/Tracekit-Dev/dotnet-sdk/issues
 - **Email**: support@tracekit.dev
 
@@ -199,5 +200,5 @@ Built on [OpenTelemetry](https://opentelemetry.io/) - the industry standard for 
 ---
 
 **Repository**: git@github.com:Tracekit-Dev/dotnet-sdk.git
-**Target Version**: v0.1.0
-**Status**: In Development
+**Version**: v0.1.0
+**Status**: Production Ready ✅
