@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- Package Metadata -->
+    <PackageId>TraceKit.Core</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>TraceKit</Authors>
+    <Company>Context.io</Company>
+    <Product>TraceKit APM</Product>
+    <Description>TraceKit .NET SDK - OpenTelemetry-based distributed tracing, metrics, and code monitoring for .NET applications</Description>
+    <PackageTags>tracing;observability;apm;opentelemetry;metrics;monitoring;distributed-tracing</PackageTags>
+    <PackageProjectUrl>https://github.com/Tracekit-Dev/dotnet-sdk</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Tracekit-Dev/dotnet-sdk</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenTelemetry" Version="1.7.0" />
+    <PackageReference Include="OpenTelemetry.Api" Version="1.7.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.7.0" />
+    <PackageReference Include="System.Text.Json" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>
