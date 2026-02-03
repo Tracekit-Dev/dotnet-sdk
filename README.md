@@ -2,7 +2,7 @@
 
 [![NuGet](https://img.shields.io/nuget/v/TraceKit.Core.svg)](https://www.nuget.org/packages/TraceKit.Core/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![.NET](https://img.shields.io/badge/.NET-6.0%20%7C%207.0%20%7C%208.0-blue.svg)](https://dotnet.microsoft.com/)
+[![.NET](https://img.shields.io/badge/.NET-8.0+-blue.svg)](https://dotnet.microsoft.com/)
 
 Official .NET SDK for TraceKit APM - OpenTelemetry-based distributed tracing, metrics collection, and application performance monitoring for .NET applications.
 
@@ -172,7 +172,7 @@ dotnet run
 
 ## Requirements
 
-- **.NET**: 6.0, 7.0, or 8.0
+- **.NET**: 8.0 or later
 - **Build Tools**: .NET SDK
 - **Dependencies**: Managed via NuGet
 
