@@ -22,7 +22,11 @@ internal record BreakpointConfig(
 );
 
 internal record BreakpointsResponse(
-    List<BreakpointConfig> Breakpoints
+    List<BreakpointConfig> Breakpoints,
+    [property: System.Text.Json.Serialization.JsonPropertyName("kill_switch")]
+    bool? KillSwitch = null,
+    [property: System.Text.Json.Serialization.JsonPropertyName("sse_endpoint")]
+    string? SseEndpoint = null
 );
 
 internal record Snapshot(
