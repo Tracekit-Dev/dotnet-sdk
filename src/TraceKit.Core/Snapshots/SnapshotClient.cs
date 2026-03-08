@@ -442,6 +442,8 @@ public sealed class SnapshotClient : IDisposable
                 {
                     using var doc = JsonDocument.Parse(data);
                     _killSwitchActive = doc.RootElement.GetProperty("enabled").GetBoolean();
+                    var interval = _killSwitchActive ? 60 : _normalPollSeconds;
+                    _pollTimer.Change(TimeSpan.FromSeconds(interval), TimeSpan.FromSeconds(interval));
                     if (_killSwitchActive)
                     {
                         Debug.WriteLine("TraceKit: Kill switch enabled via SSE, closing connection");
@@ -451,7 +453,8 @@ public sealed class SnapshotClient : IDisposable
                 }
 
                 case "heartbeat":
-                    // No action needed -- keeps connection alive
+                case "sdk_count":
+                    // No action needed -- heartbeat keeps connection alive, sdk_count is for dashboard UI
                     break;
 
                 default:
