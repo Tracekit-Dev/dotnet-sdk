@@ -188,8 +188,8 @@ public sealed class SnapshotClient : IDisposable
                 Variables: scanResult.SanitizedVariables,
                 SecurityFlags: scanResult.SecurityFlags.Cast<object>().ToList(),
                 StackTrace: stackTrace,
-                TraceId: activity?.TraceId.ToString(),
-                SpanId: activity?.SpanId.ToString(),
+                TraceId: activity != null && activity.Recorded ? activity.TraceId.ToString() : null,
+                SpanId: activity != null && activity.Recorded ? activity.SpanId.ToString() : null,
                 Timestamp: DateTime.UtcNow
             );
 
