@@ -1,5 +1,9 @@
 using TraceKit.Core;
+using TraceKit.Core.LLM;
 using DotNetEnv;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 // Load .env file if it exists
 Env.Load();
@@ -12,6 +16,7 @@ var apiKey = Environment.GetEnvironmentVariable("TRACEKIT_API_KEY") ?? "test_key
 var endpoint = Environment.GetEnvironmentVariable("TRACEKIT_ENDPOINT") ?? "http://localhost:8081";
 var serviceName = Environment.GetEnvironmentVariable("TRACEKIT_SERVICE_NAME") ?? "dotnet-sdk";
 var codeMonitoringEnabled = Environment.GetEnvironmentVariable("TRACEKIT_CODE_MONITORING_ENABLED") != "false";
+var anthropicApiKey = Environment.GetEnvironmentVariable("ANTHROPIC_API_KEY") ?? "";
 
 // Initialize TraceKit SDK
 var config = TracekitConfig.CreateBuilder()
@@ -89,7 +94,8 @@ app.MapGet("/", () =>
             ["GET /api/call-php"] = "Call PHP service",
             ["GET /api/call-laravel"] = "Call Laravel service",
             ["GET /api/call-java"] = "Call Java service",
-            ["GET /api/call-all"] = "Call all services"
+            ["GET /api/call-all"] = "Call all services",
+            ["GET /llm"] = "LLM instrumentation test (Anthropic)"
         }
     });
 });
@@ -408,6 +414,136 @@ app.MapGet("/api/call-all", async (IHttpClientFactory httpClientFactory) =>
         }
     }
 
+    return Results.Ok(results);
+});
+
+// LLM helper function
+async Task<Dictionary<string, object>> CallAnthropic(HttpClient client, string apiKey, bool stream)
+{
+    var requestBody = new
+    {
+        model = "claude-haiku-4-5-20251001",
+        max_tokens = 50,
+        messages = new[] { new { role = "user", content = "Say hello in exactly 3 words." } },
+        stream = stream
+    };
+
+    var json = JsonSerializer.Serialize(requestBody);
+    var request = new HttpRequestMessage(HttpMethod.Post, "https://api.anthropic.com/v1/messages")
+    {
+        Content = new StringContent(json, Encoding.UTF8, "application/json")
+    };
+    request.Headers.Add("x-api-key", apiKey);
+    request.Headers.Add("anthropic-version", "2023-06-01");
+
+    var response = await client.SendAsync(request, stream ? HttpCompletionOption.ResponseHeadersRead : HttpCompletionOption.ResponseContentRead);
+    response.EnsureSuccessStatusCode();
+
+    if (!stream)
+    {
+        var responseJson = await response.Content.ReadAsStringAsync();
+        var doc = JsonNode.Parse(responseJson)!;
+        return new Dictionary<string, object>
+        {
+            ["status"] = "PASS",
+            ["model"] = doc["model"]?.GetValue<string>() ?? "unknown",
+            ["content"] = doc["content"]?[0]?["text"]?.GetValue<string>() ?? "",
+            ["streaming"] = false
+        };
+    }
+    else
+    {
+        // Read SSE stream
+        var responseStream = await response.Content.ReadAsStreamAsync();
+        using var reader = new StreamReader(responseStream);
+        var contentBuilder = new StringBuilder();
+        string modelName = "unknown";
+
+        while (await reader.ReadLineAsync() is { } line)
+        {
+            if (!line.StartsWith("data: ")) continue;
+            var data = line.Substring(6);
+            if (data == "[DONE]") break;
+
+            try
+            {
+                var evt = JsonNode.Parse(data);
+                if (evt == null) continue;
+
+                var evtType = evt["type"]?.GetValue<string>();
+                if (evtType == "message_start")
+                {
+                    modelName = evt["message"]?["model"]?.GetValue<string>() ?? modelName;
+                }
+                else if (evtType == "content_block_delta")
+                {
+                    var delta = evt["delta"]?["text"]?.GetValue<string>();
+                    if (delta != null) contentBuilder.Append(delta);
+                }
+            }
+            catch { /* skip unparseable lines */ }
+        }
+
+        return new Dictionary<string, object>
+        {
+            ["status"] = "PASS",
+            ["model"] = modelName,
+            ["content"] = contentBuilder.ToString(),
+            ["streaming"] = true
+        };
+    }
+}
+
+// LLM instrumentation test endpoint
+app.MapGet("/llm", async () =>
+{
+    var results = new Dictionary<string, object>();
+    int passed = 0, failed = 0, skipped = 0;
+
+    // Create HttpClient with TracekitLlmHandler
+    var llmConfig = new LlmConfig { CaptureContent = true };
+    var handler = new TracekitLlmHandler(llmConfig);
+    var client = new HttpClient(handler);
+
+    // Anthropic non-streaming
+    if (!string.IsNullOrEmpty(anthropicApiKey))
+    {
+        try
+        {
+            var result = await CallAnthropic(client, anthropicApiKey, stream: false);
+            results["anthropic_non_streaming"] = result;
+            passed++;
+        }
+        catch (Exception e)
+        {
+            results["anthropic_non_streaming"] = $"FAIL: {e.Message}";
+            failed++;
+        }
+
+        // Anthropic streaming
+        try
+        {
+            var result = await CallAnthropic(client, anthropicApiKey, stream: true);
+            results["anthropic_streaming"] = result;
+            passed++;
+        }
+        catch (Exception e)
+        {
+            results["anthropic_streaming"] = $"FAIL: {e.Message}";
+            failed++;
+        }
+    }
+    else
+    {
+        results["anthropic"] = "SKIPPED - ANTHROPIC_API_KEY not set";
+        skipped += 2;
+    }
+
+    // OpenAI - skipped (API key expired)
+    results["openai"] = "SKIPPED - OpenAI API key expired, testing Anthropic only";
+    skipped += 2;
+
+    results["summary"] = new { passed, failed, skipped };
     return Results.Ok(results);
 });
 
