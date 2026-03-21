@@ -89,6 +89,62 @@ app.Run();
 }
 ```
 
+## LLM Instrumentation
+
+TraceKit .NET SDK provides automatic instrumentation for LLM API calls (OpenAI and Anthropic) via a `DelegatingHandler`. All LLM calls are traced with `gen_ai.*` semantic convention attributes including model, provider, token usage, cost, latency, and finish reason.
+
+### Setup
+
+Wrap your `HttpClient` with the `TracekitLlmHandler`:
+
+```csharp
+using TraceKit.Core.LLM;
+
+// Create LLM config (optional — defaults to enabled with content capture off)
+var llmConfig = new LlmConfig
+{
+    CaptureContent = true,   // Enable request/response content capture
+    OpenAI = true,           // Enable OpenAI instrumentation (default: true)
+    Anthropic = true         // Enable Anthropic instrumentation (default: true)
+};
+
+// Create an instrumented HttpClient
+var handler = new TracekitLlmHandler(llmConfig);
+var httpClient = new HttpClient(handler);
+
+// Use the client for LLM API calls — spans are created automatically
+var request = new HttpRequestMessage(HttpMethod.Post,
+    "https://api.anthropic.com/v1/messages");
+request.Headers.Add("x-api-key", anthropicKey);
+request.Headers.Add("anthropic-version", "2023-06-01");
+request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+
+var response = await httpClient.SendAsync(request);
+```
+
+### Captured Attributes
+
+Each LLM span includes:
+
+| Attribute | Description |
+|-----------|-------------|
+| `gen_ai.operation.name` | Always `"chat"` |
+| `gen_ai.system` | `"openai"` or `"anthropic"` |
+| `gen_ai.request.model` | Requested model (e.g., `gpt-4o-mini`) |
+| `gen_ai.response.model` | Actual model used in response |
+| `gen_ai.usage.input_tokens` | Input token count |
+| `gen_ai.usage.output_tokens` | Output token count |
+| `gen_ai.usage.cost` | Estimated cost in USD |
+| `gen_ai.response.finish_reason` | `stop`, `end_turn`, etc. |
+
+### Streaming Support
+
+Both streaming and non-streaming calls are automatically instrumented. For streaming, the handler parses SSE chunks and accumulates token counts.
+
+### PII Scrubbing
+
+When content capture is enabled, PII patterns (emails, phone numbers, SSNs, API keys) are automatically scrubbed from captured content.
+
 ## Metrics API
 
 ```csharp
