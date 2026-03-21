@@ -72,6 +72,7 @@ public sealed class TracekitSDK : IDisposable
         return Sdk.CreateTracerProviderBuilder()
             .SetResourceBuilder(resourceBuilder)
             .AddSource(config.ServiceName)
+            .AddSource("tracekit-llm")
             .AddHttpClientInstrumentation()
             .AddOtlpExporter(options =>
             {
