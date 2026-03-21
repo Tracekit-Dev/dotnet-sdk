@@ -72,8 +72,10 @@ public class TracekitLlmHandler : DelegatingHandler
                 (req, ct) => base.SendAsync(req, ct),
                 cancellationToken),
 
-            // Anthropic will be added in Plan 02 -- pass through for now
-            "anthropic" => await base.SendAsync(request, cancellationToken),
+            "anthropic" => await AnthropicHandler.HandleAsync(
+                Config, request, body,
+                (req, ct) => base.SendAsync(req, ct),
+                cancellationToken),
 
             _ => await base.SendAsync(request, cancellationToken)
         };
