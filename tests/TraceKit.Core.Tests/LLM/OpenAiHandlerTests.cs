@@ -338,9 +338,13 @@ public class OpenAiHandlerTests : IDisposable
     // --- Anthropic passthrough ---
 
     [Fact]
-    public async Task AnthropicHost_PassesThrough()
+    public async Task AnthropicHost_CreatesSpan()
     {
-        var mock = new MockInnerHandler(new HttpResponseMessage(HttpStatusCode.OK));
+        var mock = new MockInnerHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("""{"id":"msg_1","type":"message","model":"claude-sonnet-4-20250514","content":[],"stop_reason":"end_turn","usage":{"input_tokens":10,"output_tokens":5}}""",
+                Encoding.UTF8, "application/json")
+        });
         var handler = new TracekitLlmHandler(LlmConfig.Default, mock);
         var client = new HttpClient(handler);
 
@@ -348,8 +352,8 @@ public class OpenAiHandlerTests : IDisposable
             new StringContent("""{"model":"claude-sonnet-4-20250514","messages":[]}""",
                 Encoding.UTF8, "application/json"));
 
-        // Anthropic detected but not handled yet -- no span created
-        Assert.Empty(_activities);
+        // Anthropic handler wired in Plan 02 -- span created
+        Assert.Single(_activities);
     }
 
     // --- Helpers ---
