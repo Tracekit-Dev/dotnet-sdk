@@ -18,7 +18,23 @@ internal record BreakpointConfig(
     [property: System.Text.Json.Serialization.JsonPropertyName("capture_count")]
     int CaptureCount,
     [property: System.Text.Json.Serialization.JsonPropertyName("expire_at")]
-    DateTime? ExpireAt
+    DateTime? ExpireAt,
+    [property: System.Text.Json.Serialization.JsonPropertyName("condition")]
+    string? Condition = null,
+    [property: System.Text.Json.Serialization.JsonPropertyName("condition_eval")]
+    string? ConditionEval = null,
+    [property: System.Text.Json.Serialization.JsonPropertyName("mode")]
+    string? Mode = null,
+    [property: System.Text.Json.Serialization.JsonPropertyName("stack_depth")]
+    int? StackDepth = null,
+    [property: System.Text.Json.Serialization.JsonPropertyName("max_depth")]
+    int? MaxDepth = null,
+    [property: System.Text.Json.Serialization.JsonPropertyName("max_payload_bytes")]
+    int? MaxPayloadBytes = null,
+    [property: System.Text.Json.Serialization.JsonPropertyName("capture_expressions")]
+    List<string>? CaptureExpressions = null,
+    [property: System.Text.Json.Serialization.JsonPropertyName("idle_timeout_hours")]
+    int? IdleTimeoutHours = null
 );
 
 internal record BreakpointsResponse(
@@ -53,7 +69,9 @@ internal record Snapshot(
     [property: System.Text.Json.Serialization.JsonPropertyName("span_id")]
     string? SpanId,
     [property: System.Text.Json.Serialization.JsonPropertyName("captured_at")]
-    DateTime Timestamp
+    DateTime Timestamp,
+    [property: System.Text.Json.Serialization.JsonPropertyName("expression_results")]
+    Dictionary<string, object?>? ExpressionResults = null
 );
 
 internal record BreakpointRegistration(
