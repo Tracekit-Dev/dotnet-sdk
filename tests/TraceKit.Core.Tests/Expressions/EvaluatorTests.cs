@@ -105,8 +105,8 @@ public class EvaluatorTests
 
     private Dictionary<string, object?> BuildEnv(TestCase tc)
     {
-        if (tc.Variables != null)
-            return ConvertJsonElement(tc.Variables);
+        if (tc.Variables != null && tc.Variables.Value.ValueKind != JsonValueKind.Null)
+            return ConvertJsonElement(tc.Variables.Value);
 
         return BuildDefaultEnv();
     }
